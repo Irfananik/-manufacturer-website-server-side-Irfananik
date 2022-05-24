@@ -18,6 +18,7 @@ async function run(){
     try{
         await client.connect()
         const partsCollection = client.db('ebike').collection('parts');
+        const placeOrderCollection = client.db('ebike').collection('placeorder');
 
         //get all parts
         app.get('/parts', async (req, res) =>{
@@ -33,6 +34,13 @@ async function run(){
           const query = {_id: ObjectId(id)}
           const parts = await partsCollection.findOne(query)
           res.send(parts)
+        })
+
+        //post place order
+        app.post('/placeorder', async (req, res) => {
+          const placeOrder = req.body
+          const result = await placeOrderCollection.insertOne(placeOrder)
+          res.send(result) 
         })
     }
     finally{
