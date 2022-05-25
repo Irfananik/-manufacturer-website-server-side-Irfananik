@@ -40,7 +40,15 @@ async function run(){
         app.post('/placeorder', async (req, res) => {
           const placeOrder = req.body
           const result = await placeOrderCollection.insertOne(placeOrder)
-          res.send(result) 
+          res.send(result)
+        })
+
+        //get place order
+        app.get('/placeorder', async (req, res) => {
+          const email = req.query.email
+          const query = {email: email}
+          const placeOrder = await placeOrderCollection.find(query).toArray()
+          res.send(placeOrder)
         })
     }
     finally{
