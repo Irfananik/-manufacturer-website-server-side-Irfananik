@@ -56,12 +56,18 @@ async function run() {
     //admin put
     app.put('/user/admin/:email', verifyJwt, async (req, res) => {
       const email = req.params.email
-      const filter = { email: email }
-      const updateDoc = {
-        $set: { role: 'admin' },
+      const requester = req.decoded.emial
+      const requesterAccount = await userCollection.findOne({ email: requester })
+      if (requesterAccount === 'admin') {
+        const filter = { email: email }
+        const updateDoc = {
+          $set: { role: 'admin' },
+        }
+        const result = await userCollection.updateOne(filter, updateDoc)
+        res.send(result)
+      }else{
+        return res.status(403).send({message: 'Forbidden'})
       }
-      const result = await userCollection.updateOne(filter, updateDoc)
-      res.send(result)
     })
 
     //get user information
