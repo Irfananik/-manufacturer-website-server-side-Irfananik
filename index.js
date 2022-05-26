@@ -53,6 +53,24 @@ async function run() {
       res.send({ result, token })
     })
 
+    //admin put
+    app.put('/user/admin/:email', verifyJwt, async (req, res) => {
+      const email = req.params.email
+      const filter = { email: email }
+      const updateDoc = {
+        $set: { role: 'admin' },
+      }
+      const result = await userCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+
+    //get user information
+    app.get('/user', verifyJwt, async (req, res) => {
+      const users = await userCollection.find().toArray()
+      res.send(users)
+    })
+
+
     //get all parts
     app.get('/parts', async (req, res) => {
       const query = {}
