@@ -20,6 +20,21 @@ async function run(){
         const partsCollection = client.db('ebike').collection('parts');
         const placeOrderCollection = client.db('ebike').collection('placeorder');
         const reviewCollection = client.db('ebike').collection('review');
+        const userCollection = client.db('ebike').collection('users');
+        const myprofileCollection = client.db('ebike').collection('myprofile');
+
+        //user put
+        app.put('/user/:email', async (req, res) => {
+          const email = req.params.email
+          const user = req.body
+          const filter = {email: email}
+          const options = {upsert: true}
+          const updateDoc = {
+            $set: user,
+          }
+          const result = await userCollection.updateOne(filter, updateDoc, options)
+          res.send(result)
+        })
 
         //get all parts
         app.get('/parts', async (req, res) =>{
@@ -62,6 +77,10 @@ async function run(){
           const query = {}
           const review = await reviewCollection.find(query).toArray()
           res.send(review)
+        })
+
+        app.patch('/myprofile', async (req, res) => {
+
         })
     }
     finally{
