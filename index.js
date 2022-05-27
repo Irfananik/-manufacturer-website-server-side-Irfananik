@@ -94,6 +94,13 @@ async function run() {
       res.send(parts)
     })
 
+    //parts post by admin
+    app.post('/parts', async (req, res) => {
+      const addItem = req.body
+      const result = await partsCollection.insertOne(addItem)
+      res.send(result)
+    })
+
     //get one parts details
     app.get('/parts/:id', async (req, res) => {
       const id = req.params.id
