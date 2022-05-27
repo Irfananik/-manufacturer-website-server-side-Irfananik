@@ -116,7 +116,7 @@ async function run() {
     })
 
     //delete parts by admin
-    app.delete('/parts/:id',verifyJwt, verifyAdmin, async (req, res) => {
+    app.delete('/parts/:id', verifyJwt, verifyAdmin, async (req, res) => {
       const id = req.params.id
       const filter = { _id: ObjectId(id) }
       const parts = await partsCollection.deleteOne(filter)
@@ -144,6 +144,13 @@ async function run() {
       }
     })
 
+    app.delete('/placeorder/:id', verifyJwt, async (req, res) => {
+      const id = req.params.id
+      const filter = { _id: ObjectId(id) }
+      const parts = await placeOrderCollection.deleteOne(filter)
+      res.send(parts)
+    })
+
     app.post('/review', async (req, res) => {
       const review = req.body
       const result = await reviewCollection.insertOne(review)
@@ -156,9 +163,30 @@ async function run() {
       res.send(review)
     })
 
-    app.put('/myprofile', async (req, res) => {
-
+    app.put('/myprofile/:email', async (req, res) => {
+      const email = req.params.email
+      const profile = req.body
+      const filter = { email: email }
+      const options = { upsert: true }
+      const updateDoc = {
+        $set: profile,
+      };
+      const result = await myprofileCollection.updateOne(filter, updateDoc, options)
+      res.send(result)
     })
+
+    app.get('/myprofile', verifyJwt, async (req, res) => {
+      const email = req.query.email;
+      const decodedEmail = req.decoded.email;
+      if (email === decodedEmail) {
+        const query = { email: email }
+        const profile = await myprofileCollection.find(query).toArray();
+        res.send(profile);
+      }
+      else {
+        return res.status(403).send({ message: 'Forbidden access' })
+      }
+    });
   }
   finally {
 
