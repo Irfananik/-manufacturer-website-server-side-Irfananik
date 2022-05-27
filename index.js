@@ -39,6 +39,18 @@ async function run() {
     const userCollection = client.db('ebike').collection('users');
     const myprofileCollection = client.db('ebike').collection('myprofile');
 
+
+    const verifyAdmin = async (req, res, next) => {
+      const requester = req.decoded.email
+      const requesterAccount = await userCollection.findOne({ email: requester })
+      if (requesterAccount.role === 'admin') {
+        next()
+      }
+      else {
+        return res.status(403).send({ message: 'Forbidden' })
+      }
+    }
+
     //user put
     app.put('/user/:email', async (req, res) => {
       const email = req.params.email
@@ -62,20 +74,14 @@ async function run() {
     })
 
     //admin put
-    app.put('/user/admin/:email', verifyJwt, async (req, res) => {
+    app.put('/user/admin/:email', verifyJwt, verifyAdmin, async (req, res) => {
       const email = req.params.email
-      const requester = req.decoded.email
-      const requesterAccount = await userCollection.findOne({ email: requester })
-      if (requesterAccount.role === 'admin') {
-        const filter = { email: email }
-        const updateDoc = {
-          $set: { role: 'admin' },
-        }
-        const result = await userCollection.updateOne(filter, updateDoc)
-        res.send(result)
-      } else {
-        return res.status(403).send({ message: 'Forbidden' })
+      const filter = { email: email }
+      const updateDoc = {
+        $set: { role: 'admin' },
       }
+      const result = await userCollection.updateOne(filter, updateDoc)
+      res.send(result)
     })
 
 
@@ -95,7 +101,7 @@ async function run() {
     })
 
     //parts post by admin
-    app.post('/parts', async (req, res) => {
+    app.post('/parts', verifyJwt, verifyAdmin, async (req, res) => {
       const addItem = req.body
       const result = await partsCollection.insertOne(addItem)
       res.send(result)
@@ -106,6 +112,14 @@ async function run() {
       const id = req.params.id
       const query = { _id: ObjectId(id) }
       const parts = await partsCollection.findOne(query)
+      res.send(parts)
+    })
+
+    //delete parts by admin
+    app.delete('/parts/:id',verifyJwt, verifyAdmin, async (req, res) => {
+      const id = req.params.id
+      const filter = { _id: ObjectId(id) }
+      const parts = await partsCollection.deleteOne(filter)
       res.send(parts)
     })
 
@@ -142,7 +156,7 @@ async function run() {
       res.send(review)
     })
 
-    app.patch('/myprofile', async (req, res) => {
+    app.put('/myprofile', async (req, res) => {
 
     })
   }
